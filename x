@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAN CARLO PRO MODERN MENU</title>
+<style>
+body {margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#0f172a,#1e293b);color:white;}
+.header {text-align:center;padding:20px;font-size:28px;color:gold;font-weight:bold;}
+.tabs {display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.tab {padding:8px 16px;background:#1e293b;border-radius:25px;cursor:pointer;font-size:15px;transition:0.3s;}
+.tab.active {background:gold;color:black;font-weight:bold;}
+.section {display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:12px;}
+.card {background:#1e293b;border-radius:12px;overflow:hidden;box-shadow:0 0 8px rgba(0,0,0,0.5);transition:0.3s;cursor:pointer;}
+.card:hover {transform:scale(1.05);box-shadow:0 0 15px rgba(255,215,0,0.6);}
+.card img {width:100%;height:140px;object-fit:cover;}
+.card-content {display:flex;justify-content:space-between;padding:10px;font-size:14px;align-items:center;}
+button {background:gold;border:none;padding:5px 10px;border-radius:8px;cursor:pointer;transition:0.2s;}
+button:hover {background:#e6c200;}
+.cart-btn {position:fixed;right:15px;bottom:70px;background:gold;color:black;padding:12px;border-radius:50px;box-shadow:0 0 10px rgba(255,215,0,0.5);cursor:pointer;z-index:100;}
+.modal {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;padding:20px;overflow:auto;z-index:1000;}
+.modal.active {display:block;}
+.admin {display:none;padding:15px;}
+.order {background:#1e293b;margin:10px 0;padding:10px;border-radius:10px;box-shadow:0 0 5px rgba(255,215,0,0.3);}
+select,input {padding:8px;width:100%;margin:5px 0;border-radius:6px;border:none;}
+</style>
+</head>
+<body>
+
+<div class="header">SAN CARLO PRO MODERN MENU</div>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab('food',event)">🍔 Хоол</div>
+<div class="tab" onclick="showTab('alcohol',event)">🥃 Алкохол</div>
+<div class="tab" onclick="showTab('soft',event)">🥤 Soft Drink</div>
+<div class="tab" onclick="openAdmin()">💻 Admin</div>
+</div>
+
+<div id="food" class="section"></div>
+<div id="alcohol" class="section" style="display:none"></div>
+<div id="soft" class="section" style="display:none"></div>
+
+<div class="cart-btn" onclick="openCart()">🛒</div>
+
+<div id="cartModal" class="modal">
+<h2>Захиалга</h2>
+<div id="cartItems"></div>
+<h3 id="total">0₮</h3>
+<select id="table">
+<option>1</option><option>2</option><option>3</option><option>4</option>
+<option>5</option><option>6</option><option>7</option><option>8</option>
+<option>9</option><option>10</option><option>11</option><option>12</option>
+<option>VIP1</option><option>VIP2</option><option>VIP3</option>
+</select>
+<button onclick="saveOrder()">Захиалах</button>
+<button onclick="closeCart()">Хаах</button>
+</div>
+
+<div id="admin" class="admin">
+<h2>ADMIN</h2>
+<button onclick="loadOrders()">Refresh</button>
+<button onclick="clearOrders()">Clear</button>
+<div id="orders"></div>
+</div>
+
+<div id="login" class="modal">
+<h2>ADMIN НЭВТРЭХ</h2>
+<input type="password" id="pass" placeholder="Password">
+<button onclick="login()">OK</button>
+</div>
+
+<script>
+let ADMIN_PASSWORD="1003";
+let cart=[];
+
+// FOODS
+let foods=["pizza","burger","steak","fried chicken","ramen","fries","salad"];
+let foodDiv=document.getElementById('food');
+foods.forEach(f=>{
+ foodDiv.innerHTML+=`<div class='card'><img src='https://source.unsplash.com/400x300/?${f}'><div class='card-content'>${f} 20000₮ <button onclick="add('${f}',20000)">+</button></div></div>`;
+});
+
+// ALCOHOL 26
+let alcohols=["whiskey","vodka","beer","wine","tequila","rum","gin","soju","cocktail","chivas","jack","jameson","hennessy","martell","baileys","jager","malibu","campari","aperol","kahlua","sambuca","heineken","corona","guinness","asahi","budweiser"];
+let alcoholDiv=document.getElementById('alcohol');
+alcohols.forEach(a=>{
+ alcoholDiv.innerHTML+=`<div class='card'><img src='https://source.unsplash.com/400x300/?${a}'><div class='card-content'>${a} 12000₮ <button onclick="add('${a}',12000)">+</button></div></div>`;
+});
+
+// SOFT DRINK 24
+let softs=["cola","sprite","fanta","pepsi","juice","orange juice","apple juice","water","sparkling water","iced tea","lemon tea","milkshake","chocolate drink","energy drink","red bull","monster","latte","americano","cappuccino","espresso","mocha","smoothie","berry smoothie","mango juice"];
+let softDiv=document.getElementById('soft');
+softs.forEach(s=>{
+ softDiv.innerHTML+=`<div class='card'><img src='https://source.unsplash.com/400x300/?${s}'><div class='card-content'>${s} 6000₮ <button onclick="add('${s}',6000)">+</button></div></div>`;
+});
+
+function add(n,p){cart.push({n,p});update();}
+function update(){let t=cart.reduce((s,i)=>s+i.p,0);document.getElementById('total').innerText=t+'₮';}
+function openCart(){document.getElementById('cartModal').classList.add('active');let h='';cart.forEach(i=>h+=`${i.n}-${i.p}₮<br>`);document.getElementById('cartItems').innerHTML=h;update();}
+function closeCart(){document.getElementById('cartModal').classList.remove('active');}
+function saveOrder(){let table=document.getElementById('table').value;let orders=JSON.parse(localStorage.getItem('orders')||'[]');orders.push({table,items:cart,time:new Date().toLocaleTimeString()});localStorage.setItem('orders',JSON.stringify(orders));alert('Захиалга амжилттай!');cart=[];closeCart();}
+
+function showTab(t,e){['food','alcohol','soft'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById(t).style.display='grid';document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');}
+
+function openAdmin(){document.getElementById('login').classList.add('active');}
+function login(){let pass=document.getElementById('pass').value;if(pass===ADMIN_PASSWORD){document.getElementById('login').classList.remove('active');document.getElementById('admin').style.display='block';loadOrders();} else {alert('Нууц үг буруу');}}
+
+function loadOrders(){let orders=JSON.parse(localStorage.getItem('orders')||'[]');let h='';orders.forEach(o=>{h+=`<div class='order'>Ширээ:${o.table}<br>${o.time}<br>${o.items.map(i=>i.n+'-'+i.p+'₮').join('<br>')}</div>`;});document.getElementById('orders').innerHTML=h;}
+function clearOrders(){if(confirm('Устгах уу?')){localStorage.removeItem('orders');loadOrders();}}
+</script>
+
+</body>
+</html>
